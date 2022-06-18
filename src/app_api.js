@@ -1,7 +1,6 @@
 import express from 'express';
 const app = express();
 
-
 import {tarefa} from './controllers/tarefa_controllers.js'
 tarefa(app);
 

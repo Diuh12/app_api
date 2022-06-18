@@ -5,12 +5,14 @@
   "description": "",
   "main": "app_api.js",
   "scripts": {
+    "start": "nodemon ./src/app_api.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.1"
+    "express": "^4.18.1",
+    "nodemon": "^2.0.16"
   }
 }
