@@ -1,9 +1,24 @@
-export const tarefa = (app) => {
-    app.get('/tarefa', (req, res) => {
-        res.send('Rota ativada com Get e recurso tarefa: valores de tarefa devem ser retornados. Rastreamento da aplicação sendo feito com nodemon')
-    })
+import { Tarefa } from "../models/tarefa_model.js";
 
-    app.post('/tarefa', (req, res) => {
-        res.send('Rota POST de tarefa ativada: tarefa adicionada ao banco de dados')
-    })
+export const tarefa = (app, bd) => {
+  app.get("/tarefa", (req, res) => {
+    res.send(bd.tarefa)
+  });
+
+  app.post("/tarefa", (req, res) => {
+
+    try {
+      const body = req.body;
+      const NovaTarefa = new Tarefa(
+        body.titulo,
+        body.descricao,
+        body.status,
+        body.data_criacao
+      );
+      bd.tarefa.push(NovaTarefa);
+      res.send({ NovaTarefa: NovaTarefa });
+    } catch (error) {
+      res.json({ message: error.message });
+    }
+  })
 };
