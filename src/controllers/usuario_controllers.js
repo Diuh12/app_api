@@ -1,8 +1,15 @@
 import { Usuario } from "../models/usuario_model.js";
 
 export const usuario = (app, bd) => {
+
   app.get("/usuario", (req, res) => {
-    res.json({ MeuBanco: bd.usuario });
+    sqlite.all('SELET * FROM USUARIOS', (err, rows) => {
+      if(err){
+        throw new Error(`Erro ao inserir: ${err}`)
+      } else {
+        res.send(rows)
+      }
+    })
   });
 
   app.post("/usuario", (req, res) => {
