@@ -3,65 +3,47 @@ import { Usuario } from "../models/usuario_model.js";
 export const usuario = (app, bd) => {
 
   app.get("/usuario", (req, res) => {
-    sqlite.all('SELET * FROM USUARIOS', (err, rows) => {
-      if(err){
-        throw new Error(`Erro ao inserir: ${err}`)
-      } else {
-        res.send(rows)
-      }
+    bd.all(`SELECT * FROM USUARIOS`, (error, result) => { 
+      if (error) res.status(404).json(error)
+      else res.status(200).json(result)
+      })
     })
-  });
+
+    app.get("/usuario/:email", (req, res) => {
+      bd.all(`SELECT * FROM USUARIOS WHERE id = ${req.params.id}`, (error, result) => {
+        if (error) res.status(404).json(error)
+      else res.status(200).json(result)
+      })
+    });
 
   app.post("/usuario", (req, res) => {
     const body = req.body;
-    const NovoUsuario = new Usuario(body.nome, body.email, body.senha);
-    bd.usuario.push(NovoUsuario);
-    res.send({ NovoUsuario: NovoUsuario });
-  });
-
-  app.get("/usuario/:email", (req, res) => {
-    const param = req.params.email;
-    const user = bd.usuario;
-    res.send(user.filter((el) => el.email == param)); 
-  });
-
-  app.delete('/usuario/:email', (req, res) => {
-    const param = req.params.email
-    const usuario = bd.usuario
-    const email = usuario.filter(el => el.email == param)
-    const sucessMsg = {
-      "message": `${param} deletado`
-    }
-    const failMsg = {
-      "message": `${param} não encontrado`
-    }
-
-    if(email.length > 0){
-      usuario.splice(usuario.indexOf(email), 1)
-    }
-    
-    res.send(email.length !== 0 ? sucessMsg : failMsg)
+    const NovoUsuario = new Usuario(body.nome, body.email, body.senha)
+    bd.run(
+        `INSERT INTO USUARIOS (NOME, EMAIL, SENHA) 
+         VALUES (?, ?, ?)`, [NovoUsuario.nome, NovoUsuario.email, NovoUsuario.senha],
+      (error) => {
+        if (error) res.status(404).json(error)
+        else res.status(200).json("Inserido com sucesso")
+      })
   })
 
-  app.put('/usuario/:nome', (req, res) => {
-    const param = req.params.nome;
-    const usuario = bd.usuario
-    const body = req.body;
-    const dadoAntigoIndex = usuario.map(el => el.nome).indexOf(param)
-    const dadoAntigo = usuario[dadoAntigoIndex]
-    if(dadoAntigoIndex > -1){
-      const novoUsuario = new Usuario(
-        body.nome || dadoAntigo.nome,
-        body.email || dadoAntigo.email,
-        body.senha || dadoAntigo.senha
-      )
-        res.json({
-          "Usuario novo": usuario[dadoAntigoIndex],
-          "para": novoUsuario
-        })
-        usuario.splice(dadoAntigoIndex, 1, novoUsuario)
-    } else{
-      res.send("usuario não encontrado")
-    }
+  app.put('/usuario/:id', (req, res) => {
+    const body = req.body
+    const id = req.params.id
+    const parametros = [body.nome, body.email, body.senha, id]
+      bd.run(`UPDATE USUARIOS SET nome = ?, email = ?, senha = ? WHERE id = ?`, parametros,
+      (error) => {
+        if(error) res.status(404).json(error)
+        else res.status(200).json("Alterado com sucesso")
+      })
   })
+
+  app.delete('/usuario/:id', (req, res) => {
+      const id = req.params.id
+      bd.run(`DELETE FROM USUARIOS WHERE id = ${id}`,(error) => {
+        if(error) res.status(404).json(error)
+        else res.status(200).json("Deletado com sucesso")
+      })
+  }) 
 };
